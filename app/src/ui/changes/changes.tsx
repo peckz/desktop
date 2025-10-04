@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as Path from 'path'
 import { DiffHeader } from '../diff/diff-header'
 import {
   DiffSelection,
@@ -153,7 +154,7 @@ export class Changes extends React.Component<IChangesProps, {}> {
     lineNumber: number
   ) => {
     const { repository } = this.props
-    const fullPath = `${repository.path}/${relativePath}`
+    const fullPath = Path.join(repository.path, relativePath)
     return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
   }
 }

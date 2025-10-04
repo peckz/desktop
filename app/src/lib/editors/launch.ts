@@ -1,6 +1,6 @@
 import { spawn, SpawnOptions } from 'child_process'
 import { pathExists } from '../../ui/lib/path-exists'
-import { ExternalEditorError, FoundEditor, ExternalEditor } from './shared'
+import { ExternalEditorError, FoundEditor } from './shared'
 import {
   expandTargetPathArgument,
   ICustomIntegration,
@@ -12,12 +12,12 @@ import {
  * in different editors.
  */
 function getArgumentsForEditor(
-  editor: ExternalEditor,
+  editorName: string,
   fullPath: string,
   lineNumber: number
 ): string[] {
   // Map of editors to their line number argument formats
-  switch (editor) {
+  switch (editorName) {
     // VS Code and variants use --goto
     case 'Visual Studio Code':
     case 'Visual Studio Code (Insiders)':
