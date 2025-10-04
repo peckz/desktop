@@ -241,6 +241,18 @@ interface ISideBySideDiffRowProps {
 
   /** The selectable group details */
   readonly rowSelectableGroup: IRowSelectableGroup | null
+
+  /** Whether the Cmd/Ctrl key is currently pressed */
+  readonly isMetaKeyPressed: boolean
+
+  /**
+   * Called when the user clicks on a line number while Cmd/Ctrl is pressed
+   */
+  readonly onLineClick: (
+    row: number,
+    column: DiffColumn,
+    lineNumber: number | null
+  ) => void
 }
 
 interface ISideBySideDiffRowState {
@@ -775,6 +787,11 @@ export class SideBySideDiffRow extends React.Component<
         className={classes}
         style={{ width: this.lineGutterWidth }}
         onMouseDown={this.onMouseDownLineNumber}
+        onClick={
+          column !== undefined
+            ? (evt: React.MouseEvent) => this.onClickLineNumber(evt, column, firstDefinedLineNumber)
+            : undefined
+        }
       >
         {isSelectable &&
           this.renderLineNumberCheckbox(checkboxId, isSelected === true)}
@@ -961,6 +978,23 @@ export class SideBySideDiffRow extends React.Component<
     }
 
     this.props.onStartSelection(this.props.numRow, column, !data.isSelected)
+  }
+
+  private onClickLineNumber = (
+    evt: React.MouseEvent,
+    column: DiffColumn,
+    lineNumber: number
+  ) => {
+    // Only handle if meta key (Cmd on Mac, Ctrl on Windows/Linux) is pressed
+    if (!this.props.isMetaKeyPressed) {
+      return
+    }
+
+    // Prevent default behavior and propagation
+    evt.preventDefault()
+    evt.stopPropagation()
+
+    this.props.onLineClick(this.props.numRow, column, lineNumber)
   }
 
   private onMouseEnterHunk = () => {

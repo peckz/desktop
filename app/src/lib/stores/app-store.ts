@@ -5838,12 +5838,16 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** Open a path to a repository or file using the user's configured editor */
-  public async _openInExternalEditor(fullPath: string): Promise<void> {
+  public async _openInExternalEditor(
+    fullPath: string,
+    lineNumber?: number
+  ): Promise<void> {
     const { selectedExternalEditor, useCustomEditor, customEditor } =
       this.getState()
 
     try {
       if (useCustomEditor && customEditor) {
+        // Custom editors don't support line numbers yet
         await launchCustomExternalEditor(fullPath, customEditor)
       } else {
         const match = await findEditorOrDefault(selectedExternalEditor)
@@ -5857,7 +5861,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
           return
         }
 
-        await launchExternalEditor(fullPath, match)
+        await launchExternalEditor(fullPath, match, lineNumber)
       }
     } catch (error) {
       this.emitError(error)

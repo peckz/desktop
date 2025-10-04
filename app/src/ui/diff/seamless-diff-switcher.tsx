@@ -112,6 +112,15 @@ interface ISeamlessDiffSwitcherProps {
   // Used in getDerivedStateFromProps, no-unused-prop-types doesn't know that
   // eslint-disable-next-line react/no-unused-prop-types
   readonly onHideWhitespaceInDiffChanged: (checked: boolean) => void
+
+  /**
+   * Called when the user clicks on a line with Cmd/Ctrl pressed.
+   * Opens the file at the specified line in the external editor.
+   */
+  readonly onOpenFileInExternalEditor?: (
+    fullPath: string,
+    lineNumber: number
+  ) => void
 }
 
 interface ISeamlessDiffSwitcherState {
@@ -377,6 +386,9 @@ export class SeamlessDiffSwitcher extends React.Component<
             onChangeImageDiffType={isLoadingDiff ? noop : onChangeImageDiffType}
             onHideWhitespaceInDiffChanged={
               isLoadingDiff ? noop : onHideWhitespaceInDiffChanged
+            }
+            onOpenFileInExternalEditor={
+              isLoadingDiff ? noop : this.props.onOpenFileInExternalEditor
             }
           />
         ) : null}

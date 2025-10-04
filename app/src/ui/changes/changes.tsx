@@ -131,6 +131,7 @@ export class Changes extends React.Component<IChangesProps, {}> {
           onOpenSubmodule={this.props.onOpenSubmodule}
           onChangeImageDiffType={this.props.onChangeImageDiffType}
           onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
+          onOpenFileInExternalEditor={this.onOpenFileInExternalEditor}
         />
       </div>
     )
@@ -145,5 +146,14 @@ export class Changes extends React.Component<IChangesProps, {}> {
       hideWhitespaceInDiff,
       this.props.repository
     )
+  }
+
+  private onOpenFileInExternalEditor = (
+    relativePath: string,
+    lineNumber: number
+  ) => {
+    const { repository } = this.props
+    const fullPath = `${repository.path}/${relativePath}`
+    return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
   }
 }
