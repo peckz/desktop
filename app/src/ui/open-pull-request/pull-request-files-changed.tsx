@@ -88,6 +88,14 @@ export class PullRequestFilesChanged extends React.Component<
     this.onOpenBinaryFile(fullPath)
   }
 
+  private onOpenFileInExternalEditor = (
+    relativePath: string,
+    lineNumber: number
+  ) => {
+    const fullPath = Path.join(this.props.repository.path, relativePath)
+    return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
+  }
+
   /**
    * Opens a binary file in an the system-assigned application for
    * said file type.
@@ -306,6 +314,7 @@ export class PullRequestFilesChanged extends React.Component<
         onOpenBinaryFile={this.onOpenBinaryFile}
         onChangeImageDiffType={this.onChangeImageDiffType}
         onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
+        onOpenFileInExternalEditor={this.onOpenFileInExternalEditor}
       />
     )
   }

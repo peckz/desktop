@@ -123,6 +123,14 @@ export class SelectedCommits extends React.Component<
     this.props.onOpenInExternalEditor(file.path)
   }
 
+  private onOpenFileInExternalEditor = (
+    relativePath: string,
+    lineNumber: number
+  ) => {
+    const fullPath = Path.join(this.props.repository.path, relativePath)
+    return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
+  }
+
   public componentWillUpdate(nextProps: ISelectedCommitsProps) {
     // reset isExpanded if we're switching commits.
     const currentValue = this.props.selectedCommits.map(c => c.sha).join('')
@@ -171,6 +179,7 @@ export class SelectedCommits extends React.Component<
           onChangeImageDiffType={this.props.onChangeImageDiffType}
           onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
           onOpenSubmodule={this.props.onOpenSubmodule}
+          onOpenFileInExternalEditor={this.onOpenFileInExternalEditor}
         />
       </div>
     )

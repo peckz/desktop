@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as Path from 'path'
 import { IStashEntry, StashedChangesLoadStates } from '../../models/stash-entry'
 import { FileList } from '../history/file-list'
 import { Dispatcher } from '../dispatcher'
@@ -78,6 +79,14 @@ export class StashDiffViewer extends React.PureComponent<IStashDiffViewerProps> 
     this.props.onOpenInExternalEditor(file.path)
   }
 
+  private onOpenFileInExternalEditor = (
+    relativePath: string,
+    lineNumber: number
+  ) => {
+    const fullPath = Path.join(this.props.repository.path, relativePath)
+    return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
+  }
+
   private onResize = (width: number) =>
     this.props.dispatcher.setStashedFilesWidth(width)
 
@@ -120,6 +129,7 @@ export class StashDiffViewer extends React.PureComponent<IStashDiffViewerProps> 
             this.props.onHideWhitespaceInDiffChanged
           }
           onOpenSubmodule={onOpenSubmodule}
+          onOpenFileInExternalEditor={this.onOpenFileInExternalEditor}
         />
       ) : null
 
