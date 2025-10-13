@@ -105,6 +105,15 @@ interface IDiffProps {
 
   /** Called when the user changes the hide whitespace in diffs setting. */
   readonly onHideWhitespaceInDiffChanged: (checked: boolean) => void
+
+  /**
+   * Called when the user clicks on a line with Cmd/Ctrl pressed.
+   * Opens the file at the specified line in the external editor.
+   */
+  readonly onOpenFileInExternalEditor?: (
+    fullPath: string,
+    lineNumber: number
+  ) => void
 }
 
 interface IDiffState {
@@ -298,6 +307,7 @@ export class Diff extends React.Component<IDiffProps, IDiffState> {
         }
         onHideWhitespaceInDiffChanged={this.props.onHideWhitespaceInDiffChanged}
         showDiffCheckMarks={this.props.showDiffCheckMarks}
+        onOpenFileInExternalEditor={this.props.onOpenFileInExternalEditor}
       />
     )
   }

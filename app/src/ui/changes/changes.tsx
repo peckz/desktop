@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as Path from 'path'
 import { DiffHeader } from '../diff/diff-header'
 import {
   DiffSelection,
@@ -131,6 +132,7 @@ export class Changes extends React.Component<IChangesProps, {}> {
           onOpenSubmodule={this.props.onOpenSubmodule}
           onChangeImageDiffType={this.props.onChangeImageDiffType}
           onHideWhitespaceInDiffChanged={this.onHideWhitespaceInDiffChanged}
+          onOpenFileInExternalEditor={this.onOpenFileInExternalEditor}
         />
       </div>
     )
@@ -145,5 +147,22 @@ export class Changes extends React.Component<IChangesProps, {}> {
       hideWhitespaceInDiff,
       this.props.repository
     )
+  }
+
+  private onOpenFileInExternalEditor = (
+    relativePath: string,
+    lineNumber: number
+  ) => {
+    const { repository } = this.props
+    const fullPath = Path.join(repository.path, relativePath)
+    
+    console.log('[Changes.onOpenFileInExternalEditor] Called with:', {
+      relativePath,
+      lineNumber,
+      fullPath,
+      repositoryPath: repository.path
+    })
+    
+    return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
   }
 }

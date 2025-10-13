@@ -150,6 +150,15 @@ interface ISideBySideDiffProps {
 
   /** Called when the user changes the hide whitespace in diffs setting. */
   readonly onHideWhitespaceInDiffChanged: (checked: boolean) => void
+
+  /**
+   * Called when the user clicks on a line with Cmd/Ctrl pressed.
+   * Opens the file at the specified line in the external editor.
+   */
+  readonly onOpenFileInExternalEditor?: (
+    fullPath: string,
+    lineNumber: number
+  ) => void
 }
 
 interface ISideBySideDiffState {
@@ -220,6 +229,9 @@ interface ISideBySideDiffState {
     hunkIndex: number
     expansionType: DiffHunkExpansionType
   } | null
+
+  /** Whether the Cmd/Ctrl key is currently pressed */
+  readonly isMetaKeyPressed: boolean
 }
 
 const listRowsHeightCache = new CellMeasurerCache({
@@ -270,6 +282,7 @@ export class SideBySideDiff extends React.Component<
       selectingTextInRow: 'before',
       lastExpandedHunk: null,
       ariaLiveMessage: '',
+      isMetaKeyPressed: false,
     }
   }
 
@@ -277,6 +290,8 @@ export class SideBySideDiff extends React.Component<
     this.initDiffSyntaxMode()
 
     window.addEventListener('keydown', this.onWindowKeyDown)
+    window.addEventListener('keydown', this.onMetaKeyDown)
+    window.addEventListener('keyup', this.onMetaKeyUp)
 
     // Listen for the custom event find-text (see app.tsx)
     // and trigger the search plugin if we see it.
@@ -414,6 +429,8 @@ export class SideBySideDiff extends React.Component<
 
   public componentWillUnmount() {
     window.removeEventListener('keydown', this.onWindowKeyDown)
+    window.removeEventListener('keydown', this.onMetaKeyDown)
+    window.removeEventListener('keyup', this.onMetaKeyUp)
     document.removeEventListener('mouseup', this.onEndSelection)
     document.removeEventListener('find-text', this.showSearch)
     document.removeEventListener(
@@ -590,7 +607,7 @@ export class SideBySideDiff extends React.Component<
   }
 
   public render() {
-    const { diff, ariaLiveMessage, isSearching } = this.state
+    const { diff, ariaLiveMessage, isSearching, isMetaKeyPressed } = this.state
 
     const rows = this.getCurrentDiffRows()
     const containerClassName = classNames('side-by-side-diff-container', {
@@ -599,6 +616,7 @@ export class SideBySideDiff extends React.Component<
         this.props.showSideBySideDiff &&
         this.state.selectingTextInRow !== undefined,
       editable: canSelect(this.props.file),
+      'meta-key-pressed': isMetaKeyPressed,
     })
 
     return (
@@ -926,6 +944,8 @@ export class SideBySideDiff extends React.Component<
             afterClassNames={afterClassNames}
             onHunkExpansionRef={this.onHunkExpansionRef}
             onLineNumberCheckedChanged={this.onLineNumberCheckedChanged}
+            isMetaKeyPressed={this.state.isMetaKeyPressed}
+            onLineClick={this.onLineClick}
           />
         </div>
       </CellMeasurer>
@@ -971,6 +991,36 @@ export class SideBySideDiff extends React.Component<
     } else {
       this.hunkExpansionRefs.set(key, button)
     }
+  }
+
+  private onLineClick = (
+    row: number,
+    column: DiffColumn,
+    lineNumber: number | null
+  ) => {
+    console.log('[onLineClick] Called with:', {
+      row,
+      column,
+      lineNumber,
+      hasCallback: !!this.props.onOpenFileInExternalEditor,
+      filePath: this.props.file.path
+    })
+
+    if (!this.props.onOpenFileInExternalEditor || lineNumber === null) {
+      console.log('[onLineClick] No callback or null line number, returning')
+      return
+    }
+
+    // Construct the full path to the file
+    const { file } = this.props
+    const fullPath = file.path
+
+    console.log('[onLineClick] Calling onOpenFileInExternalEditor with:', {
+      fullPath,
+      lineNumber
+    })
+
+    this.props.onOpenFileInExternalEditor(fullPath, lineNumber)
   }
 
   private getRowHeight = (row: { index: number }) => {
@@ -1618,6 +1668,26 @@ export class SideBySideDiff extends React.Component<
     if (isCmdOrCtrl && !event.shiftKey && !event.altKey && event.key === 'f') {
       event.preventDefault()
       this.showSearch()
+    }
+  }
+
+  private onMetaKeyDown = (event: KeyboardEvent) => {
+    const isCmdOrCtrl = __DARWIN__
+      ? event.metaKey && !event.ctrlKey
+      : event.ctrlKey
+
+    if (isCmdOrCtrl && !this.state.isMetaKeyPressed) {
+      this.setState({ isMetaKeyPressed: true })
+    }
+  }
+
+  private onMetaKeyUp = (event: KeyboardEvent) => {
+    const isCmdOrCtrl = __DARWIN__
+      ? event.metaKey && !event.ctrlKey
+      : event.ctrlKey
+
+    if (!isCmdOrCtrl && this.state.isMetaKeyPressed) {
+      this.setState({ isMetaKeyPressed: false })
     }
   }
 

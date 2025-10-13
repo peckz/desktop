@@ -241,6 +241,18 @@ interface ISideBySideDiffRowProps {
 
   /** The selectable group details */
   readonly rowSelectableGroup: IRowSelectableGroup | null
+
+  /** Whether the Cmd/Ctrl key is currently pressed */
+  readonly isMetaKeyPressed: boolean
+
+  /**
+   * Called when the user clicks on a line number while Cmd/Ctrl is pressed
+   */
+  readonly onLineClick: (
+    row: number,
+    column: DiffColumn,
+    lineNumber: number | null
+  ) => void
 }
 
 interface ISideBySideDiffRowState {
@@ -775,12 +787,27 @@ export class SideBySideDiffRow extends React.Component<
         className={classes}
         style={{ width: this.lineGutterWidth }}
         onMouseDown={this.onMouseDownLineNumber}
+        onClick={
+          column !== undefined
+            ? (evt: React.MouseEvent) => this.onClickLineNumber(evt, column)
+            : undefined
+        }
       >
         {isSelectable &&
           this.renderLineNumberCheckbox(checkboxId, isSelected === true)}
         <label
           htmlFor={checkboxId}
           onContextMenu={this.onContextMenuLineNumber}
+          onClick={
+            column !== undefined
+              ? (evt: React.MouseEvent) => {
+                  // If meta key is pressed, handle as editor open instead of checkbox
+                  if (this.props.isMetaKeyPressed) {
+                    this.onClickLineNumber(evt, column)
+                  }
+                }
+              : undefined
+          }
         >
           {this.renderLineNumberCheck(isSelected)}
           {lineNumbers.map((lineNumber, index) => (
@@ -961,6 +988,63 @@ export class SideBySideDiffRow extends React.Component<
     }
 
     this.props.onStartSelection(this.props.numRow, column, !data.isSelected)
+  }
+
+  private onClickLineNumber = (
+    evt: React.MouseEvent,
+    column: DiffColumn
+  ) => {
+    // Only handle if meta key (Cmd on Mac, Ctrl on Windows/Linux) is pressed
+    if (!this.props.isMetaKeyPressed) {
+      console.log('[onClickLineNumber] Meta key not pressed, ignoring click')
+      return
+    }
+
+    // Prevent default behavior and propagation
+    evt.preventDefault()
+    evt.stopPropagation()
+
+    // Get the actual file line number based on the row type and column
+    const { row } = this.props
+    let lineNumber: number | null = null
+
+    switch (row.type) {
+      case DiffRowType.Added:
+        if (column === DiffColumn.After) {
+          lineNumber = row.data.lineNumber
+        }
+        break
+      case DiffRowType.Deleted:
+        if (column === DiffColumn.Before) {
+          lineNumber = row.data.lineNumber
+        }
+        break
+      case DiffRowType.Modified:
+        if (column === DiffColumn.Before) {
+          lineNumber = row.beforeData.lineNumber
+        } else if (column === DiffColumn.After) {
+          lineNumber = row.afterData.lineNumber
+        }
+        break
+      case DiffRowType.Context:
+        if (column === DiffColumn.Before) {
+          lineNumber = row.beforeLineNumber ?? null
+        } else if (column === DiffColumn.After) {
+          lineNumber = row.afterLineNumber ?? null
+        }
+        break
+    }
+
+    console.log('[onClickLineNumber] Extracted line number:', {
+      rowType: row.type,
+      column,
+      lineNumber,
+      numRow: this.props.numRow
+    })
+
+    if (lineNumber !== null) {
+      this.props.onLineClick(this.props.numRow, column, lineNumber)
+    }
   }
 
   private onMouseEnterHunk = () => {
