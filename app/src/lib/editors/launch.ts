@@ -6,6 +6,7 @@ import {
   ICustomIntegration,
   parseCustomIntegrationArguments,
 } from '../custom-integration'
+import { log } from '../logging/log'
 
 /**
  * Generate the command line arguments for opening a file at a specific line
@@ -146,6 +147,18 @@ export const launchExternalEditor = (
   const args = lineNumber
     ? getArgumentsForEditor(editor.editor, fullPath, lineNumber)
     : [fullPath]
+  
+  // Debug logging
+  if (lineNumber) {
+    console.log('[launchExternalEditor] Opening file with line number:', {
+      editor: editor.editor,
+      editorPath: editor.path,
+      fullPath,
+      lineNumber,
+      args
+    })
+  }
+  
   return launchEditor(editor.path, args, `'${editor.editor}'`, __DARWIN__)
 }
 

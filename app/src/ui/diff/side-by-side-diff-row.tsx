@@ -986,6 +986,7 @@ export class SideBySideDiffRow extends React.Component<
   ) => {
     // Only handle if meta key (Cmd on Mac, Ctrl on Windows/Linux) is pressed
     if (!this.props.isMetaKeyPressed) {
+      console.log('[onClickLineNumber] Meta key not pressed, ignoring click')
       return
     }
 
@@ -1023,6 +1024,13 @@ export class SideBySideDiffRow extends React.Component<
         }
         break
     }
+
+    console.log('[onClickLineNumber] Extracted line number:', {
+      rowType: row.type,
+      column,
+      lineNumber,
+      numRow: this.props.numRow
+    })
 
     if (lineNumber !== null) {
       this.props.onLineClick(this.props.numRow, column, lineNumber)

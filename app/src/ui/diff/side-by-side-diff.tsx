@@ -998,13 +998,27 @@ export class SideBySideDiff extends React.Component<
     column: DiffColumn,
     lineNumber: number | null
   ) => {
+    console.log('[onLineClick] Called with:', {
+      row,
+      column,
+      lineNumber,
+      hasCallback: !!this.props.onOpenFileInExternalEditor,
+      filePath: this.props.file.path
+    })
+
     if (!this.props.onOpenFileInExternalEditor || lineNumber === null) {
+      console.log('[onLineClick] No callback or null line number, returning')
       return
     }
 
     // Construct the full path to the file
     const { file } = this.props
     const fullPath = file.path
+
+    console.log('[onLineClick] Calling onOpenFileInExternalEditor with:', {
+      fullPath,
+      lineNumber
+    })
 
     this.props.onOpenFileInExternalEditor(fullPath, lineNumber)
   }

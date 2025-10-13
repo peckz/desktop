@@ -155,6 +155,14 @@ export class Changes extends React.Component<IChangesProps, {}> {
   ) => {
     const { repository } = this.props
     const fullPath = Path.join(repository.path, relativePath)
+    
+    console.log('[Changes.onOpenFileInExternalEditor] Called with:', {
+      relativePath,
+      lineNumber,
+      fullPath,
+      repositoryPath: repository.path
+    })
+    
     return this.props.dispatcher.openInExternalEditor(fullPath, lineNumber)
   }
 }
