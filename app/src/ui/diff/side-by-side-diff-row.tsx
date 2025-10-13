@@ -798,6 +798,16 @@ export class SideBySideDiffRow extends React.Component<
         <label
           htmlFor={checkboxId}
           onContextMenu={this.onContextMenuLineNumber}
+          onClick={
+            column !== undefined
+              ? (evt: React.MouseEvent) => {
+                  // If meta key is pressed, handle as editor open instead of checkbox
+                  if (this.props.isMetaKeyPressed) {
+                    this.onClickLineNumber(evt, column)
+                  }
+                }
+              : undefined
+          }
         >
           {this.renderLineNumberCheck(isSelected)}
           {lineNumbers.map((lineNumber, index) => (
