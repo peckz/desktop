@@ -789,7 +789,7 @@ export class SideBySideDiffRow extends React.Component<
         onMouseDown={this.onMouseDownLineNumber}
         onClick={
           column !== undefined
-            ? (evt: React.MouseEvent) => this.onClickLineNumber(evt, column, firstDefinedLineNumber)
+            ? (evt: React.MouseEvent) => this.onClickLineNumber(evt, column)
             : undefined
         }
       >
@@ -982,8 +982,7 @@ export class SideBySideDiffRow extends React.Component<
 
   private onClickLineNumber = (
     evt: React.MouseEvent,
-    column: DiffColumn,
-    lineNumber: number
+    column: DiffColumn
   ) => {
     // Only handle if meta key (Cmd on Mac, Ctrl on Windows/Linux) is pressed
     if (!this.props.isMetaKeyPressed) {
@@ -994,7 +993,40 @@ export class SideBySideDiffRow extends React.Component<
     evt.preventDefault()
     evt.stopPropagation()
 
-    this.props.onLineClick(this.props.numRow, column, lineNumber)
+    // Get the actual file line number based on the row type and column
+    const { row } = this.props
+    let lineNumber: number | null = null
+
+    switch (row.type) {
+      case DiffRowType.Added:
+        if (column === DiffColumn.After) {
+          lineNumber = row.data.lineNumber
+        }
+        break
+      case DiffRowType.Deleted:
+        if (column === DiffColumn.Before) {
+          lineNumber = row.data.lineNumber
+        }
+        break
+      case DiffRowType.Modified:
+        if (column === DiffColumn.Before) {
+          lineNumber = row.beforeData.lineNumber
+        } else if (column === DiffColumn.After) {
+          lineNumber = row.afterData.lineNumber
+        }
+        break
+      case DiffRowType.Context:
+        if (column === DiffColumn.Before) {
+          lineNumber = row.beforeLineNumber ?? null
+        } else if (column === DiffColumn.After) {
+          lineNumber = row.afterLineNumber ?? null
+        }
+        break
+    }
+
+    if (lineNumber !== null) {
+      this.props.onLineClick(this.props.numRow, column, lineNumber)
+    }
   }
 
   private onMouseEnterHunk = () => {

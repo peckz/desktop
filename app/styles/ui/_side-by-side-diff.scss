@@ -24,10 +24,14 @@
   // When meta key is pressed, show pointer cursor on line numbers
   &.meta-key-pressed {
     .line-number {
-      cursor: pointer;
+      cursor: pointer !important;
       
       &:hover {
         background-color: var(--box-selected-background-color);
+      }
+      
+      * {
+        cursor: pointer !important;
       }
     }
   }
